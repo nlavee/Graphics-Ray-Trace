@@ -2,3 +2,9 @@
 /Polygon.class
 /Vector.class
 /Vertex.class
+/Surface.class
+/Point.class
+/SurfaceProperties.class
+/Ray.class
+/Sphere.class
+/Light.class

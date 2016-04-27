@@ -5,7 +5,7 @@ package src.models;
  * @author AnhVuNguyen
  *
  */
-public class Vertex {
+public class Point {
 
 	public double x1;
 	public double x2;
@@ -19,7 +19,7 @@ public class Vertex {
 	 * @param x3
 	 * @param x4
 	 */
-	public Vertex(double x1, double x2, double x3, double x4) {
+	public Point(double x1, double x2, double x3, double x4) {
 		this.x1 = x1;
 		this.x2 = x2;
 		this.x3 = x3;
@@ -32,7 +32,7 @@ public class Vertex {
 	 * @param y
 	 * @param z
 	 */
-	public Vertex(double x, double y, double z)
+	public Point(double x, double y, double z)
 	{
 		this.x1 = x;
 		this.x2 = y;
@@ -43,7 +43,7 @@ public class Vertex {
 	/**
 	 * Enpty constructor
 	 */
-	public Vertex() {
+	public Point() {
 		
 	}
 
@@ -84,7 +84,7 @@ public class Vertex {
 	 * @param v2
 	 * @return
 	 */
-	public Vector subtractVertices(Vertex v2)
+	public Vector subtractVertices(Point v2)
 	{
 		double y1 = v2.getX1();
 		double y2 = v2.getX2();

@@ -1,36 +1,32 @@
 package src.models;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-/**
- * Class for a polygon
- * @author AnhVuNguyen
- *
- */
-public class Polygon extends Surface
-{
-
-	public ArrayList<Point> pointList; // an array of point
+public class Sphere extends Surface{
 	private SurfaceProperties props;
-
-	public Polygon(ArrayList<Point> pointList,
-			SurfaceProperties props) {
-		this.pointList = pointList;
+	private double radius;
+	private Point center;
+	
+	public Sphere()
+	{
+		
+	}
+	
+	public Sphere(SurfaceProperties props) {
 		this.props = props;
 	}
 
-	public Polygon()
-	{
-		pointList = new ArrayList<Point>();
-		props =  new SurfaceProperties();
-	}
-	
-	public void addPoint(Point point)
-	{
-		pointList.add(point);
+	public Sphere(SurfaceProperties props, double radius, Point center) {
+		this.props = props;
+		this.radius = radius;
+		this.center = center;
 	}
 
+	public Sphere(double radius, Point center)
+	{
+		this.radius = radius;
+		this.center = center;
+				
+	}
+	
 	public void setRed(double r)
 	{
 		if (r >= 0)
@@ -106,28 +102,11 @@ public class Polygon extends Surface
 		return props.getBlue();
 	}
 
-	public int getNumVs()
-	{
-		return pointList.size();
-	}
 	
-	public String getColorInfo()
-	{
-		return "red: " + props.getRed() + ", green: " + props.getGreen() + ", blue: " + props.getBlue();
-	}
-
-	@Override
-	public String toString() {
-		return "Polygon [numberOfVs=" + pointList.size() + ", vertex="
-				+ pointList
-				+ ", red=" + props.getRed() + ", green=" + props.getGreen() + ", blue=" + props.getBlue() + "]";
-	}
-
 	@Override
 	public Point intersect(Ray x) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
+
 }

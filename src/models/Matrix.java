@@ -123,7 +123,7 @@ public class Matrix {
 		return res;
 	}
 
-	public Vertex multiply(Vertex v)
+	public Point multiply(Point v)
 	{
 		double[] vertexValues = new double[4];
 		
@@ -133,7 +133,7 @@ public class Matrix {
 			vertexValues[i] = rowA[0] * v.getX1() + rowA[1] * v.getX2() + rowA[2] * v.getX3() + rowA[3] * v.getX4();
 		}
 		
-		return new Vertex(vertexValues[0], vertexValues[1], vertexValues[2], vertexValues[3]);	
+		return new Point(vertexValues[0], vertexValues[1], vertexValues[2], vertexValues[3]);	
 	}
 	
 	@Override
@@ -151,7 +151,7 @@ public class Matrix {
 //		for(double d : row1) System.out.println(d);
 		Matrix test = one.multiply(two);
 		System.out.println(test);
-		Vertex v = new Vertex(1,2,3,4);
+		Point v = new Point(1,2,3,4);
 		System.out.println(test.multiply(v));
 		
 	}

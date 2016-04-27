@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import src.models.Matrix;
-import src.models.Vertex;
+import src.models.Point;
 
 public class MatrixTest {
 
@@ -77,13 +77,13 @@ public class MatrixTest {
 	}
 
 	@Test
-	public void testMultiplyVertex() {
+	public void testMultiplyPoint() {
 		double[][] data = {{1,0,0,1},{1,0,1,0},{1,1,1,1},{0,0,0,0}};
 		Matrix temp = new Matrix(data);
 		
-		Vertex temp2 = new Vertex(6,8,34,199);
+		Point temp2 = new Point(6,8,34,199);
 		
-		Vertex mulRes = temp.multiply(temp2);
+		Point mulRes = temp.multiply(temp2);
 		
 		assertTrue( mulRes.getX1() == 205 );
 		assertTrue( mulRes.getX2() == 40 );
