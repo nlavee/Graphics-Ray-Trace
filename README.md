@@ -1,26 +1,8 @@
 #Computer Graphics  
 
-This is part of my extended work with Computer Graphics using JOGL in Java.  
+This project is part of my exploration with Computer Graphics. 
 
-This project aims to promotes understanding in Perspective Projection and common transformation in 3D. In this project, I transformed a home into the view from world coorindates.   
-
-#Things you can do  
-* Move the world around  
-This is done by manipulating the View Reference Point (VRP) from world coorindates.  
-Keys available: j,k,l,n,m,,(comma)  
-* Zoom  
-You can also zoom in and out. This is done by manipulating the parameters restricting the view dimension.  
-Keys available: +,-  
-* Rotation  
-The rotations implemented are around x,y,z axis. The degree set to is currently 10, so that you can see the gradual change in angle of rotating.
-Keys available: a,s,d,z,x,c  
-
-If you are tired of transforming the house, you can also revert everything back to the start using . (period).
-
-Here's the image of the house when you first started:
-
-![](img/initial.png)
-
+This project is an implementation of Ray Tracing algorithm. The idea behind this project is to perform Ray Tracing and generate an image that should mimic the world as realistically as possible.
 
 ##Contact  
 I can be contacted at [vu.nguyen@skidmore.edu](mailto:vu.nguyen@skidmore.edu) or [anhvu.nguyenlam@gmail.com](mailto:anhvu.nguyenlam@gmail.com).  
