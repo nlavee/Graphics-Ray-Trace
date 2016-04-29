@@ -67,6 +67,10 @@ public class ReadObjectAndViewingFiles
 	public static Point prp;
 	public static double umin=0, umax=0, vmin=0, vmax=0;
 	
+	static double ambientRed;
+	static double ambientGreen;
+	static double ambientBlue;
+	
 	/* Pixel Array */
 	public static SurfaceProperties[][] image;
 	
@@ -401,6 +405,22 @@ public class ReadObjectAndViewingFiles
 							+ viewfName);
 					System.exit(1);
 				}
+				
+				line = viewFileBR.readLine(); // should be the AMBIENT line
+				st = new StringTokenizer(line, " ");
+				tempstr = st.nextToken();
+				if (tempstr.equals("AMBIENT")) {
+					tempstr = st.nextToken();
+					ambientRed = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					ambientGreen = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					ambientBlue = Double.parseDouble(tempstr);
+				} else {
+					System.out.println("Expecting AMBIENT line in file "
+							+ viewfName);
+					System.exit(1);
+				}
 
 				viewFileBR.close();
 				System.out.print("...\n");
@@ -501,18 +521,46 @@ public class ReadObjectAndViewingFiles
 		if(nearestPoint != null)
 		{
 			Vector normal = computerNormalAtIntersection(surface[nearestSurface], nearestPoint, ray);
-			prop = RT_Shade(surface[nearestSurface], ray, nearestPoint, i);
+			prop = RT_Shade(surface[nearestSurface], ray, nearestPoint, normal, i);
 		}
 		
 		return prop;
 	}
 
 	private static SurfaceProperties RT_Shade(Surface surface2, Ray ray,
-			Point nearestPoint, int i) {
+			Point nearestPoint, Vector normal, int i) {
 		SurfaceProperties prop = new SurfaceProperties();
+		SurfaceProperties reflectedProp = new SurfaceProperties();
+		SurfaceProperties refractedProp = new SurfaceProperties();
 		
+		Ray reflected = new Ray();
+		Ray refracted = new Ray();
+		Ray shadow = new Ray();
+		
+		// set ambient term
+		setColor(prop, ambientRed, ambientGreen, ambientBlue);
+		
+		for(Light l : light)
+		{
+			Vector pointToLight = l.getPosition().subtractVertices(nearestPoint);
+			Ray sRay = new Ray(nearestPoint, pointToLight);
+			if( normal.dotProduct(pointToLight) > 0)
+			{
+				// compute how much light is blocked by opaque and transparent surfaces
+				
+				
+				
+			}
+		}
 		
 		return prop;
+	}
+
+	private static void setColor(SurfaceProperties prop, double ambientRed2,
+			double ambientGreen2, double ambientBlue2) {
+		prop.setRed(ambientRed2);
+		prop.setGreen(ambientGreen2);
+		prop.setBlue(ambientBlue2);
 	}
 
 	private static Vector computerNormalAtIntersection(Surface surface2,
