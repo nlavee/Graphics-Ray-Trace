@@ -4,12 +4,12 @@ public class Sphere extends Surface{
 	private SurfaceProperties props;
 	private double radius;
 	private Point center;
-	
+
 	public Sphere()
 	{
 		this.props = new SurfaceProperties();
 	}
-	
+
 	public Sphere(SurfaceProperties props) {
 		this.props = props;
 	}
@@ -26,7 +26,7 @@ public class Sphere extends Surface{
 		this.center = center;
 		this.props = new SurfaceProperties();	
 	}
-	
+
 	public void setRed(double r)
 	{
 		if (r >= 0)
@@ -86,7 +86,7 @@ public class Sphere extends Surface{
 			props.setBlue(0.0);
 		}
 	}
-	
+
 	public double getRed()
 	{
 		return props.getRed();
@@ -102,11 +102,73 @@ public class Sphere extends Surface{
 		return props.getBlue();
 	}
 
-	
+
 	@Override
 	public Point intersect(Ray x) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Point intersection = null;
+		Vector rayDirection = null;
+		Vector CenterToOrign = center.subtractVertices(x.getStartingPoint());
+		boolean doesNotIntersect = false;
+		Double L = null;
+		Double E = null;
+
+		// check inside sphere
+		boolean insideSphere = isInsideSphere(x);
+
+		if(!insideSphere)
+		{
+			rayDirection = new Vector(x.getDirection().getX1(), 
+					x.getDirection().getX2(),
+					x.getDirection().getX3());
+			rayDirection.normalize();
+			L = CenterToOrign.dotProduct(rayDirection);
+			if(L < 0)
+			{
+				doesNotIntersect = true;
+			}
+
+			if(!doesNotIntersect)
+			{
+				double centerToOriginDist = CenterToOrign.magnitude();
+				double eSquared = radius * radius - centerToOriginDist * centerToOriginDist + L * L;
+				E = Math.sqrt(eSquared);
+				if( eSquared < 0)
+				{
+					doesNotIntersect = true;
+				}
+			}
+		}
+
+		if(!doesNotIntersect)
+		{
+			Double s = null;
+			if(!insideSphere)
+			{
+				s = L - E;
+			}
+			else
+			{
+				s = L + E;
+			}
+			intersection = new Point(x.getStartingPoint().getX1() + rayDirection.getX1() * s, 
+					x.getStartingPoint().getX2() + rayDirection.getX2() * s,
+					x.getStartingPoint().getX3() + rayDirection.getX3() * s);
+		}
+
+		return intersection;
+	}
+
+	private boolean isInsideSphere(Ray ray)
+	{
+		Vector CenterToOrign = center.subtractVertices(ray.getStartingPoint());
+		// check inside sphere
+		boolean insideSphere = false;
+		if( CenterToOrign.magnitude() < radius )
+		{
+			insideSphere = true;
+		}
+		return insideSphere;
 	}
 
 	@Override
@@ -115,5 +177,20 @@ public class Sphere extends Surface{
 				+ center + "]";
 	}
 
-	
+	@Override
+	public Vector calculateNormalAtIntersection(Point intersection, Ray ray) {
+
+		boolean isInsideSphere = isInsideSphere(ray);
+		int coeff = isInsideSphere ? -1 : 1;
+		
+		Vector normal = new Vector(
+				coeff * (intersection.getX1() - center.getX1()) / radius,
+				coeff * (intersection.getX2() - center.getX2()) / radius,
+				coeff * (intersection.getX3() - center.getX3()) / radius
+				);
+
+		return normal;
+	}
+
+
 }

@@ -43,8 +43,10 @@ import src.models.Light;
 import src.models.Matrix;
 import src.models.Point;
 import src.models.Polygon;
+import src.models.Ray;
 import src.models.Sphere;
 import src.models.Surface;
+import src.models.SurfaceProperties;
 import src.models.Vector;
 import src.models.Point;
 
@@ -62,25 +64,12 @@ public class ReadObjectAndViewingFiles
 	public static Light light[];
 
 	/* Viewing parameters */
-	public static Point vrp;
-	public static Vector vpn;
-	public static Vector vup;
 	public static Point prp;
 	public static double umin=0, umax=0, vmin=0, vmax=0;
-	public static double frontClip=0, backClip=0;
-
-	/* Save the original parameter, just so that we can revert back easily, space-consuming though */
-	public static Point vrpTemp;
-	public static Vector vpnTemp;
-	public static Vector vupTemp;
-	public static Point prpTemp;
-	public static double uminTemp=0, umaxTemp=0, vminTemp=0, vmaxTemp=0;
-	public static double frontClipTemp=0, backClipTemp=0;
 	
-	private static DrawAndHandleInput dahi;
-	public static Frame testFrame;
-
-
+	/* Pixel Array */
+	public static SurfaceProperties[][] image;
+	
 	public static void main(String args[]) 
 	{
 		//printInstruction();
@@ -375,60 +364,6 @@ public class ReadObjectAndViewingFiles
 			try {
 				viewFileBR = new BufferedReader(new FileReader(viewfName));
 
-				line = viewFileBR.readLine(); // should be the VRP line
-				st = new StringTokenizer(line, " ");
-				tempstr = st.nextToken();
-				if (tempstr.equals("VRP")) {
-					double x1=0, y1=0, z1=0;				
-					tempstr = st.nextToken();
-					x1 = Double.parseDouble(tempstr);
-					tempstr = st.nextToken();
-					y1 = Double.parseDouble(tempstr);
-					tempstr = st.nextToken();
-					z1 = Double.parseDouble(tempstr);
-					vrp = new Point(x1,y1,z1,1.0);
-				} else {
-					System.out.println("Expecting VRP line in file "
-							+ viewfName);
-					System.exit(1);
-				}
-
-				line = viewFileBR.readLine(); // should be the VPN line
-				st = new StringTokenizer(line, " ");
-				tempstr = st.nextToken();
-				if (tempstr.equals("VPN")) {
-					double x1=0, y1=0, z1=0;				
-					tempstr = st.nextToken();
-					x1 = Double.parseDouble(tempstr);
-					tempstr = st.nextToken();
-					y1 = Double.parseDouble(tempstr);
-					tempstr = st.nextToken();
-					z1 = Double.parseDouble(tempstr);
-					vpn = new Vector(x1,y1,z1);
-				} else {
-					System.out.println("Expecting VPN line in file "
-							+ viewfName);
-					System.exit(1);
-				}
-
-				line = viewFileBR.readLine(); // should be the VUP line
-				st = new StringTokenizer(line, " ");
-				tempstr = st.nextToken();
-				if (tempstr.equals("VUP")) {
-					double x1=0, y1=0, z1=0;				
-					tempstr = st.nextToken();
-					x1 = Double.parseDouble(tempstr);
-					tempstr = st.nextToken();
-					y1 = Double.parseDouble(tempstr);
-					tempstr = st.nextToken();
-					z1 = Double.parseDouble(tempstr);
-					vup = new Vector(x1,y1,z1);
-				} else {
-					System.out.println("Expecting VUP line in file "
-							+ viewfName);
-					System.exit(1);
-				}
-
 				line = viewFileBR.readLine(); // should be the PRP line
 				st = new StringTokenizer(line, " ");
 				tempstr = st.nextToken();
@@ -463,31 +398,6 @@ public class ReadObjectAndViewingFiles
 
 				} else {
 					System.out.println("Expecting WINDOW line in file "
-							+ viewfName);
-					System.exit(1);
-				}
-
-				line = viewFileBR.readLine(); // should be the FRONT line
-				st = new StringTokenizer(line, " ");
-				tempstr = st.nextToken();
-				if (tempstr.equals("FRONT")) {
-					tempstr = st.nextToken();
-					frontClip = Double.parseDouble(tempstr);
-
-				} else {
-					System.out.println("Expecting FRONT line in file "
-							+ viewfName);
-					System.exit(1);
-				}
-				line = viewFileBR.readLine(); // should be the BACK line
-				st = new StringTokenizer(line, " ");
-				tempstr = st.nextToken();
-				if (tempstr.equals("BACK")) {
-					tempstr = st.nextToken();
-					backClip = Double.parseDouble(tempstr);
-
-				} else {
-					System.out.println("Expecting BACK line in file "
 							+ viewfName);
 					System.exit(1);
 				}
@@ -541,141 +451,76 @@ public class ReadObjectAndViewingFiles
 //			System.out.println(l);
 //		}
 		
+		double height = umax - umin;
+		double width = vmax - vmin;
+		image  = new SurfaceProperties[(int) height][(int) width];
+		
+		// for each scan line
+		for(int i = 0; i < height; i++)
+		{
+			// for each pixel in scan line
+			for(int j = 0; j < width; j++)
+			{
+				double xValuePixel = (2/height) * (i + 0.5)-1;
+				double yValuePixel = (2/width) * (j+0.5) - 1;
+				Point pixelPoint = new Point(xValuePixel, yValuePixel, -1);
+				Vector rayFromPRP = pixelPoint.subtractVertices(prp);
+				Ray ray = new Ray(prp, rayFromPRP);
+				image[i][j] = RT_trace(ray, 1);
+				
+			}
+		}
+		
+	}
+
+	private static SurfaceProperties RT_trace(Ray ray, int i) {
+		SurfaceProperties prop = new SurfaceProperties();
+		
+		// determine nearest intersection point
+		int nearestSurface = -1;
+		Point nearestPoint = null;
+		for(int j = 0; j < surface.length; j++)
+		{
+			Surface surf = surface[j];
+			Point intersectionPoint = surf.intersect(ray);
+			if(nearestPoint == null)
+			{
+				nearestPoint = intersectionPoint;
+				nearestSurface = j;
+			}
+			else
+			{
+				if(intersectionPoint.getX3() < nearestPoint.getX3())
+				{
+					nearestPoint = intersectionPoint;
+					nearestSurface = j;
+				}
+			}
+		}
+		
+		if(nearestPoint != null)
+		{
+			Vector normal = computerNormalAtIntersection(surface[nearestSurface], nearestPoint, ray);
+			prop = RT_Shade(surface[nearestSurface], ray, nearestPoint, i);
+		}
+		
+		return prop;
+	}
+
+	private static SurfaceProperties RT_Shade(Surface surface2, Ray ray,
+			Point nearestPoint, int i) {
+		SurfaceProperties prop = new SurfaceProperties();
 		
 		
+		return prop;
 	}
 
-	private static void printInstruction() {
-		System.out.println("Welcome!");
-		System.out.println("We have a combination of keys that you can try.");
-		System.out.println("Here is a list of key and its function:");
-		System.out.println("\t 1.  . (period) -- Reset Image Back To Original Display");
-		System.out.println("\t 2.  j --- Move VRP in Positive u");
-		System.out.println("\t 3.  k --- Move VRP in Positive v");
-		System.out.println("\t 4.  l --- Move VRP in Positive n");
-		System.out.println("\t 5.  n --- Move VRP in Negative u");
-		System.out.println("\t 6.  m --- Move VRP in Negative u");
-		System.out.println("\t 7.  , --- Move VRP in Negative u");
-		System.out.println("\t 8.  a --- Rotate Clockwise Around x-axis");
-		System.out.println("\t 9.  s --- Rotate Clockwise Around y-axis");
-		System.out.println("\t 10. d --- Rotate Clockwise Around z-axis");
-		System.out.println("\t 11. z --- Rotate Counterclockwise Around x-axis");
-		System.out.println("\t 12. x --- Rotate Counterclockwise Around y-axis");
-		System.out.println("\t 13. c --- Rotate Counterclockwise Around z-axis");
-		System.out.println("\t 14. + (Shift & = ) --- Zoom in ");
-		System.out.println("\t 15. - ---  Zoom out");
-		System.out.println("\t 16. q ---  Exit Program");
-		System.out.println("(Please click on the generated window to make it your active window)");
+	private static Vector computerNormalAtIntersection(Surface surface2,
+			Point nearestPoint, Ray ray) {
+		Vector normal = surface2.calculateNormalAtIntersection(nearestPoint, ray);
+		return normal;
 	}
 
-	private static void setTempParam() {
-		vrpTemp = new Point(vrp.getX1(), vrp.getX2(), vrp.getX3(), vrp.getX4());
-		vpnTemp = new Vector(vpn.getX1(), vpn.getX2(), vpn.getX3());
-		vupTemp = new Vector(vup.getX1(), vup.getX2(), vup.getX3());
-		prpTemp = new Point(prp.getX1(), prp.getX2(), prp.getX3(), prp.getX4());
-		uminTemp = new Double(umin);
-		umaxTemp = new Double(umax); 
-		vminTemp = new Double(vmin);
-		vmaxTemp = new Double(vmax);
-		frontClipTemp = new Double(frontClip);
-		backClipTemp = new Double(backClip);
-//		System.out.println("Finished allocating temp");
-	}
-
-	private static void mainDrawing() {
-		/* Create the Frame */
-		testFrame = new Frame("TestFrame");
-
-
-		/* set the coordinates on the screen of the
-       upper left corner of the window 
-
-       So the window will start off at 10,10 
-       (near the upper left corner of the whole screen)
-		 */
-		testFrame.setLocation(10, 10);
-
-		/* set the window to be 400x500 pixels 
-           higher b/c of borders
-		 */
-		testFrame.setSize( 1024, 768 );
-
-
-		// This allows us to define some attributes
-		// about the capabilities of GL for this program
-		// such as color depth, and whether double buffering is
-		// used.
-		//GLCapabilities glCapabilities = new GLCapabilities();
-
-		GLCapabilities glCapabilities = new GLCapabilities(GLProfile.get(GLProfile.GL2));
-
-		glCapabilities.setRedBits(8);
-		glCapabilities.setGreenBits(8);
-		glCapabilities.setBlueBits(8);
-		glCapabilities.setAlphaBits(8);
-
-		/*
-		 * this will turn on double buffering
-		 * ignore for now
-		 * glCapabilities.setDoubleBuffered(true);
-		 */
-		glCapabilities.setDoubleBuffered(true);
-		// create the GLCanvas that is to be added to our Frame
-		GLCanvas canvas = new GLCanvas(glCapabilities);
-		testFrame.add( canvas );
-
-		// create the Animator and attach the GLCanvas to it
-		Animator a = new Animator(canvas);
-
-		// create an instance of the Class that listens to all events
-		// (GLEvents, Keyboard, and Mouse events)
-		// add this object as all these listeners to the canvas 
-		dahi = new DrawAndHandleInput(canvas);
-		canvas.addGLEventListener(dahi);
-		canvas.addKeyListener(dahi);
-		canvas.addMouseListener(dahi);
-
-		// this will swap the buffers (when double buffering)
-		// ignore for now
-		// canvas.swapBuffers();
-
-		// if user closes the window by clicking on the X in 
-		// upper right corner
-		testFrame.addWindowListener( new WindowListener() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-			public void windowClosed(WindowEvent e) {
-
-			}
-			public void windowDeiconified(WindowEvent e) {
-
-			}
-			public void windowIconified(WindowEvent e) {
-
-			}
-			public void windowOpened(WindowEvent e) {
-
-			}
-			public void windowDeactivated(WindowEvent e) {
-
-			}
-			public void windowActivated(WindowEvent e) {
-
-			}
-		});
-		/*		
-	.addWindowListener(new WindowAdapter() {
-	    public void windowClosing(WindowEvent e) {
-	      System.exit(0);
-	    }
-	  });
-		 */	
-		testFrame.setVisible(true);
-		a.start(); // start the Animator, which periodically calls display() on the GLCanvas
-
-
-	}
 
 } // end of class
 
