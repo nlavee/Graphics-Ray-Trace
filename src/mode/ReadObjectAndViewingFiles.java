@@ -137,7 +137,7 @@ public class ReadObjectAndViewingFiles
 				if (tempstr.equals("SURFACE")) {
 					tempstr = st.nextToken();
 					numSurface = Integer.parseInt(tempstr);
-					surface = new Surface[numPolys];
+					surface = new Surface[numSurface];
 				} else {
 					System.out.println("Expecting SURFACE line in file "
 							+ objfName);
@@ -168,6 +168,7 @@ public class ReadObjectAndViewingFiles
 				if (tempstr.equals("LIGHT")) {
 					tempstr = st.nextToken();
 					numLight = Integer.parseInt(tempstr);
+					light = new Light[numLight];
 				} else {
 					System.out.println("Expecting LIGHT line in file "
 							+ objfName);
@@ -252,7 +253,9 @@ public class ReadObjectAndViewingFiles
 					newPolygon.setGreen(Double.parseDouble(tempstr));
 					tempstr = st.nextToken();
 					newPolygon.setBlue(Double.parseDouble(tempstr));
-
+					
+//					System.out.println(newPolygon);
+					
 					surface[i] = newPolygon;
 				}
 				
@@ -296,7 +299,7 @@ public class ReadObjectAndViewingFiles
 					tempstr = st.nextToken();
 					newSphere.setBlue(Double.parseDouble(tempstr));
 
-					surface[i] = newSphere;
+					surface[numPolys + i] = newSphere;
 				}
 
 				/**
@@ -490,7 +493,7 @@ public class ReadObjectAndViewingFiles
 				}
 
 				viewFileBR.close();
-				System.out.print("...");
+				System.out.print("...\n");
 			} catch (FileNotFoundException fnfe) {
 				System.out.println("File not found");
 			} catch (IOException ioe) {
@@ -525,6 +528,20 @@ public class ReadObjectAndViewingFiles
 	} // end of main		
 
 	private static void mainImageGenerating() {
+//		for(Point point : v)
+//		{
+//			System.out.println(point);
+//		}
+//		for(Surface surf : surface)
+//		{
+//			System.out.println(surf);
+//		}
+//		for(Light l : light)
+//		{
+//			System.out.println(l);
+//		}
+		
+		
 		
 	}
 

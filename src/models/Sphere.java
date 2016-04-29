@@ -7,7 +7,7 @@ public class Sphere extends Surface{
 	
 	public Sphere()
 	{
-		
+		this.props = new SurfaceProperties();
 	}
 	
 	public Sphere(SurfaceProperties props) {
@@ -24,7 +24,7 @@ public class Sphere extends Surface{
 	{
 		this.radius = radius;
 		this.center = center;
-				
+		this.props = new SurfaceProperties();	
 	}
 	
 	public void setRed(double r)
@@ -109,4 +109,11 @@ public class Sphere extends Surface{
 		return null;
 	}
 
+	@Override
+	public String toString() {
+		return "Sphere [props=" + props + ", radius=" + radius + ", center="
+				+ center + "]";
+	}
+
+	
 }
