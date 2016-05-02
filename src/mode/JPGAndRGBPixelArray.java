@@ -12,11 +12,16 @@ package src.mode;
 
 */
 import java.io.*;
+
 import javax.imageio.*;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
+
 import javax.imageio.stream.*;
+
+import src.models.RGBPixel;
 
 public class JPGAndRGBPixelArray
 {

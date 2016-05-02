@@ -118,9 +118,7 @@ public class Polygon extends Surface
 
 	@Override
 	public String toString() {
-		return "Polygon [numberOfVs=" + pointList.size() + ", vertex="
-				+ pointList
-				+ ", red=" + props.getRed() + ", green=" + props.getGreen() + ", blue=" + props.getBlue() + "]";
+		return "Polygon [pointList=" + pointList + ", props=" + props + "]";
 	}
 
 	@Override
@@ -227,6 +225,11 @@ public class Polygon extends Surface
 		}
 		
 		return normal;
+	}
+
+	@Override
+	public SurfaceProperties getSurfaceProperties() {
+		return props;
 	}
 
 

@@ -43,6 +43,7 @@ import src.models.Light;
 import src.models.Matrix;
 import src.models.Point;
 import src.models.Polygon;
+import src.models.RGBPixel;
 import src.models.Ray;
 import src.models.Sphere;
 import src.models.Surface;
@@ -57,7 +58,7 @@ import com.jogamp.opengl.util.Animator;
 
 public class ReadObjectAndViewingFiles 
 {
-	
+
 
 	public static Point v[];
 	public static Surface surface[];
@@ -66,18 +67,20 @@ public class ReadObjectAndViewingFiles
 	/* Viewing parameters */
 	public static Point prp;
 	public static double umin=0, umax=0, vmin=0, vmax=0;
-	
+
 	static double ambientRed;
 	static double ambientGreen;
 	static double ambientBlue;
-	
+
 	/* Pixel Array */
-	public static SurfaceProperties[][] image;
-	
+	public static RGBPixel[][] image;
+
+	public static int maxDepth = 5;
+
+	public static boolean debug = false;
+
 	public static void main(String args[]) 
 	{
-		//printInstruction();
-		System.out.println("(loading)");
 		boolean io = false;
 
 		if(!io) {
@@ -151,7 +154,7 @@ public class ReadObjectAndViewingFiles
 							+ objfName);
 					System.exit(1);
 				}
-				
+
 				/**
 				 * Getting an idea of how many light there are
 				 */
@@ -167,7 +170,7 @@ public class ReadObjectAndViewingFiles
 							+ objfName);
 					System.exit(1);
 				}
-			
+
 				/**
 				 * Go through vertices list
 				 */
@@ -246,12 +249,26 @@ public class ReadObjectAndViewingFiles
 					newPolygon.setGreen(Double.parseDouble(tempstr));
 					tempstr = st.nextToken();
 					newPolygon.setBlue(Double.parseDouble(tempstr));
-					
-//					System.out.println(newPolygon);
-					
+
+					st.nextToken(); // ignore the string OTHER
+
+					tempstr = st.nextToken();
+					double ambientReflectionCoeff = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					double diffuseReflectionCoeff = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					double specularReflectionCoeff = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					double specularReflectionExp = Double.parseDouble(tempstr);
+					newPolygon.getSurfaceProperties().setAmbientReflectionCoefficient(ambientReflectionCoeff);
+					newPolygon.getSurfaceProperties().setDiffuseReflectionCoefficient(diffuseReflectionCoeff);
+					newPolygon.getSurfaceProperties().setSpecularReflectionCoefficient(specularReflectionCoeff);
+					newPolygon.getSurfaceProperties().setSpecularReflectionExponent(specularReflectionExp);
+					if(debug) System.out.println(newPolygon);
+
 					surface[i] = newPolygon;
 				}
-				
+
 				/**
 				 * Go through sphere list
 				 */
@@ -292,6 +309,20 @@ public class ReadObjectAndViewingFiles
 					tempstr = st.nextToken();
 					newSphere.setBlue(Double.parseDouble(tempstr));
 
+					st.nextToken(); // ignore the string OTHER
+
+					tempstr = st.nextToken();
+					double ambientReflectionCoeff = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					double diffuseReflectionCoeff = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					double specularReflectionCoeff = Double.parseDouble(tempstr);
+					tempstr = st.nextToken();
+					double specularReflectionExp = Double.parseDouble(tempstr);
+					newSphere.getSurfaceProperties().setAmbientReflectionCoefficient(ambientReflectionCoeff);
+					newSphere.getSurfaceProperties().setDiffuseReflectionCoefficient(diffuseReflectionCoeff);
+					newSphere.getSurfaceProperties().setSpecularReflectionCoefficient(specularReflectionCoeff);
+					newSphere.getSurfaceProperties().setSpecularReflectionExponent(specularReflectionExp);
 					surface[numPolys + i] = newSphere;
 				}
 
@@ -334,7 +365,7 @@ public class ReadObjectAndViewingFiles
 					Light newLight = new Light(position, r,g,b);
 					light[i] = newLight;
 				}
-				
+
 				objFileBR.close();
 
 			} catch (FileNotFoundException fnfe) {
@@ -343,20 +374,19 @@ public class ReadObjectAndViewingFiles
 				System.out.println("couldn't read from file");
 			}
 
-			System.out.print("...");
-			
-//			for(Point Point : v)
-//			{
-//				System.out.println(Point);
-//			}
-//			
-//			for (int i = 0; i < numPolys; i++) {
-//				System.out.println("Polygon number " + i + ":");
-//				for (int j = 0; j < polygon[i].getNumVs(); j++)
-//					System.out.println(" " + v[polygon[i].PointIndices[j]].toString());
-//				System.out.println();
-//				System.out.println(" with color: " + polygon[i].getColorInfo() + "\n");
-//			}
+
+			//			for(Point Point : v)
+			//			{
+			//				System.out.println(Point);
+			//			}
+			//			
+			//			for (int i = 0; i < numPolys; i++) {
+			//				System.out.println("Polygon number " + i + ":");
+			//				for (int j = 0; j < polygon[i].getNumVs(); j++)
+			//					System.out.println(" " + v[polygon[i].PointIndices[j]].toString());
+			//				System.out.println();
+			//				System.out.println(" with color: " + polygon[i].getColorInfo() + "\n");
+			//			}
 
 			// ================================================================
 			// ------READ VIEWING PARAMETER FILE  
@@ -405,7 +435,7 @@ public class ReadObjectAndViewingFiles
 							+ viewfName);
 					System.exit(1);
 				}
-				
+
 				line = viewFileBR.readLine(); // should be the AMBIENT line
 				st = new StringTokenizer(line, " ");
 				tempstr = st.nextToken();
@@ -430,19 +460,22 @@ public class ReadObjectAndViewingFiles
 				System.out.println("couldn't read from file");
 			}
 
-//			System.out.println("VRP = " + vrp);
-//			System.out.println("PRP = " + prp);
-//			System.out.println("VUP = " + vup);
-//			System.out.println("VPN = " + vpn);
-//			
-//			System.out.print("WINDOW =");
-//			System.out.println(" " + umin + " " + umax + " " + vmin + " " + vmax);
-//
-//			System.out.print("FRONT =");
-//			System.out.println(" " + frontClip);
-//
-//			System.out.print("BACK =");
-//			System.out.println(" " + backClip);
+			//			System.out.println("VRP = " + vrp);
+			//			System.out.println("PRP = " + prp);
+			//			System.out.println("VUP = " + vup);
+			//			System.out.println("VPN = " + vpn);
+			//			
+			//			System.out.print("WINDOW =");
+			//			System.out.println(" " + umin + " " + umax + " " + vmin + " " + vmax);
+			//
+			//			System.out.print("FRONT =");
+			//			System.out.println(" " + frontClip);
+			//
+			//			System.out.print("BACK =");
+			//			System.out.println(" " + backClip);
+			if (debug) System.out.println(ambientRed);
+			if (debug) System.out.println(ambientGreen);
+			if (debug) System.out.println(ambientBlue);
 
 			io = true;
 		}
@@ -458,102 +491,197 @@ public class ReadObjectAndViewingFiles
 	} // end of main		
 
 	private static void mainImageGenerating() {
-//		for(Point point : v)
-//		{
-//			System.out.println(point);
-//		}
-//		for(Surface surf : surface)
-//		{
-//			System.out.println(surf);
-//		}
-//		for(Light l : light)
-//		{
-//			System.out.println(l);
-//		}
+		if (debug) {
+			for(Point point : v)
+			{
+				System.out.println(point);
+			}
+			for(Surface surf : surface)
+			{
+				System.out.println(surf);
+			}
+			for(Light l : light)
+			{
+				System.out.println(l);
+			}
+		}
 		
 		double height = umax - umin;
 		double width = vmax - vmin;
-		image  = new SurfaceProperties[(int) height][(int) width];
-		
+		//System.out.println("Height: " + (height) + " - Width: " + (width));
+
+		image  = new RGBPixel[(int) height][(int) width];
+
 		// for each scan line
 		for(int i = 0; i < height; i++)
 		{
 			// for each pixel in scan line
 			for(int j = 0; j < width; j++)
 			{
+				System.out.println("\t\tStarting on pixel: (" + i + "," +j + ")");
 				double xValuePixel = (2/height) * (i + 0.5)-1;
-				double yValuePixel = (2/width) * (j+0.5) - 1;
-				Point pixelPoint = new Point(xValuePixel, yValuePixel, -1);
+				double yValuePixel = (2/width) * (j + 0.5) - 1;
+				Point pixelPoint = new Point(xValuePixel, yValuePixel, -1); // plane sits on z = -1
+				if (debug) System.out.println(pixelPoint);
+
 				Vector rayFromPRP = pixelPoint.subtractVertices(prp);
 				Ray ray = new Ray(prp, rayFromPRP);
-				image[i][j] = RT_trace(ray, 1);
 				
+				// start tracing ray
+				SurfaceProperties surfaceProp = RT_trace(ray, 1);
+				if (debug) System.out.println(surfaceProp.getRed() * 255 + " - " + surfaceProp.getGreen() * 255 + " - " + surfaceProp.getBlue() * 255);
+				
+				// get the color and put it in the array of RGB Pixel
+				image[i][j] = new RGBPixel((int) (surfaceProp.getRed() * 255), 
+						(int) (surfaceProp.getGreen() * 255), 
+						(int) (surfaceProp.getBlue() * 255));
+				
+				//if (debug) 
 			}
 		}
-		
+
+		// export image
+		try {
+			ReadWritePPM.writeImage(image, "../../img/test.ppm");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static SurfaceProperties RT_trace(Ray ray, int i) {
 		SurfaceProperties prop = new SurfaceProperties();
-		
+
 		// determine nearest intersection point
 		int nearestSurface = -1;
 		Point nearestPoint = null;
 		for(int j = 0; j < surface.length; j++)
 		{
 			Surface surf = surface[j];
+			if (debug) System.out.println(surf);
+
+			// calculate intersection point
 			Point intersectionPoint = surf.intersect(ray);
-			if(nearestPoint == null)
+			if(intersectionPoint != null)
 			{
-				nearestPoint = intersectionPoint;
-				nearestSurface = j;
-			}
-			else
-			{
-				if(intersectionPoint.getX3() < nearestPoint.getX3())
+				//if (debug) 
+				//	System.out.println(intersectionPoint);
+				if(nearestPoint == null)
 				{
 					nearestPoint = intersectionPoint;
 					nearestSurface = j;
 				}
+				else
+				{
+					if(intersectionPoint.getX3() < nearestPoint.getX3()) // going in negative z so smaller is better
+					{
+						nearestPoint = intersectionPoint;
+						nearestSurface = j;
+					}
+				}
 			}
 		}
-		
+
+		// if we can find a nearest point, we calculate normal at intersection
+		// and then compute other ray from this
 		if(nearestPoint != null)
 		{
+			//if (debug) 
+			//System.out.println(nearestPoint);
 			Vector normal = computerNormalAtIntersection(surface[nearestSurface], nearestPoint, ray);
+			//System.out.println(normal);
 			prop = RT_Shade(surface[nearestSurface], ray, nearestPoint, normal, i);
 		}
-		
+		// if no point, meaning that it just shots to infinity, set that pixel to have ambient color
+		else
+		{
+			setColor(prop, ambientRed, ambientGreen, ambientBlue);
+		}
+
+		// return surface properties so that we can get color out
 		return prop;
 	}
 
 	private static SurfaceProperties RT_Shade(Surface surface2, Ray ray,
 			Point nearestPoint, Vector normal, int i) {
 		SurfaceProperties prop = new SurfaceProperties();
-		SurfaceProperties reflectedProp = new SurfaceProperties();
-		SurfaceProperties refractedProp = new SurfaceProperties();
 		
 		Ray reflected = new Ray();
 		Ray refracted = new Ray();
 		Ray shadow = new Ray();
-		
-		// set ambient term
-		setColor(prop, ambientRed, ambientGreen, ambientBlue);
-		
+
 		for(Light l : light)
 		{
 			Vector pointToLight = l.getPosition().subtractVertices(nearestPoint);
-			Ray sRay = new Ray(nearestPoint, pointToLight);
+			shadow = new Ray(nearestPoint, pointToLight);
 			if( normal.dotProduct(pointToLight) > 0)
 			{
 				// compute how much light is blocked by opaque and transparent surfaces
 				
-				
-				
+
+
 			}
 		}
-		
+
+		if( i < maxDepth )
+		{
+			// if object is reflective
+			if(surface2.getSurfaceProperties().getSpecularReflectionCoefficient() > 0.0)
+			{
+				Vector reflectedVector = calculateReflectedVector(ray, normal, nearestPoint);
+				reflected = new Ray(nearestPoint, reflectedVector);
+				//System.out.println(reflected);
+				SurfaceProperties surfPropRRay = RT_trace(reflected, i+1);
+
+				// scale color by specular coefficient and add to color
+				double redSpecular = surfPropRRay.getRed() * surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
+				double greenSpecular = surfPropRRay.getGreen() * surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
+				double blueSpecular = surfPropRRay.getBlue() * surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
+				//				System.out.println(redSpecular + " - " + greenSpecular + " - " + blueSpecular);
+				setColor(prop, prop.getRed() + redSpecular, prop.getGreen() + greenSpecular, prop.getBlue() + blueSpecular);
+
+			}
+
+			// if object is transparent, not taking this into account right now
+			//			if(true)
+			//			{
+			//				Ray tRay = new Ray();
+			//
+			//				// if total internal reflection does not occur
+			//				if(true)
+			//				{
+			//					SurfaceProperties surfProptRay = RT_trace(tRay, i+1);
+			//
+			//					// scale color by transmission coefficient and add to color
+			//					
+			//				}
+			//			}
+		}
+
 		return prop;
+	}
+
+	/**
+	 * Calculate e reflected ray based on the entering ray and normal vector.
+	 * @param ray
+	 * @param normal
+	 * @param nearestPoint
+	 * @return
+	 */
+	private static Vector calculateReflectedVector(Ray ray, Vector normal,
+			Point nearestPoint) {
+		Vector lightIn = nearestPoint.subtractVertices(ray.getStartingPoint());
+		lightIn.normalize();
+		normal.normalize();
+
+		double doubleDotProductInAndNormal = lightIn.dotProduct(normal) * 2;
+		Vector newN = new Vector(doubleDotProductInAndNormal * normal.getX1(),
+				doubleDotProductInAndNormal * normal.getX2(), 
+				doubleDotProductInAndNormal * normal.getX3());
+		
+		Vector res = new Vector(newN.getX1() - lightIn.getX1(), 
+				newN.getX2() - lightIn.getX2(),
+				newN.getX3() - lightIn.getX3());
+		return res;
 	}
 
 	private static void setColor(SurfaceProperties prop, double ambientRed2,
@@ -565,8 +693,7 @@ public class ReadObjectAndViewingFiles
 
 	private static Vector computerNormalAtIntersection(Surface surface2,
 			Point nearestPoint, Ray ray) {
-		Vector normal = surface2.calculateNormalAtIntersection(nearestPoint, ray);
-		return normal;
+		return surface2.calculateNormalAtIntersection(nearestPoint, ray);
 	}
 
 

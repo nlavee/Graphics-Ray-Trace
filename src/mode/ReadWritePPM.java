@@ -15,6 +15,8 @@ package src.mode;
 import java.io.*;
 import java.util.*;
 
+import src.models.RGBPixel;
+
 public class ReadWritePPM
 {
 	/*
