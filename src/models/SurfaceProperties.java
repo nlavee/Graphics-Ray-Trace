@@ -9,6 +9,7 @@ public class SurfaceProperties {
 	double diffuseReflectionCoefficient;
 	double specularReflectionCoefficient;
 	double specularReflectionExponent;
+	boolean reflective;
 	
 	public SurfaceProperties() {
 	}
@@ -84,6 +85,14 @@ public class SurfaceProperties {
 		this.specularReflectionExponent = specularReflectionExponent;
 	}
 
+	public boolean isReflective() {
+		return reflective;
+	}
+
+	public void setReflective(boolean reflective) {
+		this.reflective = reflective;
+	}
+
 	@Override
 	public String toString() {
 		return "SurfaceProperties [red=" + red + ", green=" + green + ", blue="
@@ -94,7 +103,7 @@ public class SurfaceProperties {
 				+ ", specularReflectionCoefficient="
 				+ specularReflectionCoefficient
 				+ ", specularReflectionExponent=" + specularReflectionExponent
-				+ "]";
+				+ ", reflective=" + reflective + "]";
 	}
 	
 	

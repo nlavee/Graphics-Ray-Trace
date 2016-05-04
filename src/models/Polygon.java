@@ -124,31 +124,124 @@ public class Polygon extends Surface
 	@Override
 	public Point intersect(Ray x) {
 
-		Point intersectionPoint = null;
+		Vector normal = calculateNormal();
 
+		Point planeIntersection = calculatePlane(x, normal);
+		//System.out.println(planeIntersection);
+
+		if(planeIntersection != null)
+		{
+			// check conditions
+			if(normal.dotProduct(x.getDirection()) > 0)
+			{
+//				System.out.println("Negate normal");
+//				System.out.println(normal);
+				normal.setX1(normal.getX1() * -1);
+				normal.setX2(normal.getX2() * -1);
+				normal.setX3(normal.getX3() * -1);
+//				System.out.println(normal);
+			}
+
+			// calculate which plane to projec to
+			int planeToProject = calculateProjection(normal);
+//			System.out.println(normal);
+//			System.out.println(planeToProject);
+
+			ArrayList<Point> projectionPoint = new ArrayList<Point>();
+			for(Point p : pointList)
+			{
+				Point pProjected = new Point(p.getX1(), p.getX2(), p.getX3(), p.getX4());
+				if(planeToProject == 1) pProjected.setX1(0);
+				else if(planeToProject == 2) pProjected.setX2(0);
+				else pProjected.setX3(0);
+				projectionPoint.add(pProjected);
+			}
+//			System.out.println(projectionPoint);
+			
+			double[][] data = {
+					{1,0,0, -1 * planeIntersection.getX1()},
+					{0,1,0, -1 * planeIntersection.getX2()},
+					{0,0,1, -1 * planeIntersection.getX3()},
+					{0,0,0,1}};
+			Matrix translateMatrix = new Matrix(data);
+			
+			for(int i = 0 ; i < projectionPoint.size(); i ++ )
+			{
+				Point p = projectionPoint.get(i);
+				projectionPoint.set(i, translateMatrix.multiply(p));
+			}
+
+			boolean intersect = originInsidePolygon(projectionPoint, planeToProject);
+
+			if(intersect)
+			{
+//				System.out.println("Intersect: " + intersect);
+				return planeIntersection;
+			}
+			else
+			{
+				return null;
+			}
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private boolean originInsidePolygon(ArrayList<Point> projectionPoint, int planeToProject) {
 		int numCross = 0;
 		int signHold1 = 0;
 		int signHold2 = 0;
 
-		if(pointList.get(0).getX2() > 0) signHold1 += 1;
+		if(projectionPoint.get(0).getX2() > 0) signHold1 += 1;
 		else signHold1 -= 1;
 
-		for(int i = 0 ; i < pointList.size() -1 ; i++)
+		for(int i = 0 ; i < projectionPoint.size() ; i++)
 		{
-			for(int j = i+1; j < pointList.size(); j++)
+			for(int j = i+1; j < projectionPoint.size(); j++)
 			{
-				Point start = pointList.get(i);
-				Point end = pointList.get(j);
+				Point start = projectionPoint.get(i);
+				Point end = projectionPoint.get(j);
 
-				if(end.getX2() > 0) signHold2 += 1;
+
+				double ub = 0;
+				double ua = 0;
+				double vb = 0;
+				double va = 0;
+				
+				if(planeToProject == 1)
+				{
+					ub = end.getX2();
+					ua = start.getX2();
+					vb = end.getX3();
+					va = start.getX3();
+				}
+				else if(planeToProject == 2)
+				{
+					ub = end.getX1();
+					ua = start.getX1();
+					vb = end.getX3();
+					va = start.getX3();
+				}
+				else if(planeToProject == 3)
+				{
+					ub = end.getX1();
+					ua = start.getX1();
+					vb = end.getX2();
+					va = start.getX2();
+				}
+				
+				
+				if(vb > 0) signHold2 += 1;
 				else signHold2 -= 1;
 
 				if(signHold1 != signHold2)
 				{
-					if(start.getX1() > 0 && end.getX1() > 0) numCross++;
-					else if(start.getX1() > 0 || end.getX1() > 0)
+					if(ua > 0 && ub > 0) numCross++;
+					else if(ua > 0 || ub > 0)
 					{
-						if(crossPosUAxis(start,end)) numCross++;
+						if(crossPosUAxis(ua, va, ub, vb)) numCross++;
 					}
 				}
 				signHold1 = signHold2;
@@ -157,28 +250,39 @@ public class Polygon extends Surface
 
 		boolean intersect = false;
 		if(numCross % 2 == 1) intersect = true;
-
-		if(intersect)
-		{
-			intersectionPoint = calculatePlane(x);
-		}
-		return intersectionPoint;
+		return intersect;
 	}
 
-	private Point calculatePlane(Ray x) 
+	private int calculateProjection(Vector normal) {
+		double xCoeff = Math.abs(normal.getX1());
+		double yCoeff = Math.abs(normal.getX2());
+		double zCoeff = Math.abs(normal.getX3());
+
+		double largest = Math.max(xCoeff, Math.max(yCoeff, zCoeff));
+
+		if(largest == xCoeff) return 1;
+		else if(largest == yCoeff) return 2;
+		else return 3;
+	}
+
+	private Point calculatePlane(Ray x, Vector normal) 
 	{
-		Vector normal = calculateNormal();
 		Point point1 = pointList.get(0);
-		
-		double D = 0 - ( normal.getX1() * point1.getX1() + normal.getX2() * point1.getX2() + normal.getX3() * point1.getX3()); 
 
+		double D = 0 - ( normal.getX1() * point1.getX1() + 
+				normal.getX2() * point1.getX2() + 
+				normal.getX3() * point1.getX3()); 
+		//System.out.println(D);
+
+		x.getDirection().normalize();
 		double s = - ( 
-				normal.dotProduct(new Vector(x.getStartingPoint().getX1(), 
-						x.getStartingPoint().getX2(), 
-						x.getStartingPoint().getX3())) + D) / 
+				normal.getX1() * x.getStartingPoint().getX1() + 
+				normal.getX2() * x.getStartingPoint().getX2() + 
+				normal.getX3() * x.getStartingPoint().getX3() + D) / 
 						(normal.dotProduct(x.getDirection()));
-
-		return new Point(x.getStartingPoint().getX1() + x.getDirection().getX1() * s,
+		//System.out.println(s);
+		if(s < 0) return null;
+		else return new Point(x.getStartingPoint().getX1() + x.getDirection().getX1() * s,
 				x.getStartingPoint().getX2() + x.getDirection().getX2() * s,
 				x.getStartingPoint().getX3() + x.getDirection().getX3() * s);
 	}
@@ -197,12 +301,7 @@ public class Polygon extends Surface
 		return normal;
 	}
 
-	private boolean crossPosUAxis(Point start, Point end) {
-		double ub = end.getX1();
-		double ua = start.getX1();
-		double vb = end.getX2();
-		double va = end.getX1();
-
+	private boolean crossPosUAxis(double ua, double va, double ub, double vb) {
 		if( ( ub + ( ua - ub ) * ( vb / (vb - va))) > 0 )
 		{
 			return true;
@@ -216,14 +315,14 @@ public class Polygon extends Surface
 	@Override
 	public Vector calculateNormalAtIntersection(Point intersection, Ray ray) {
 		Vector normal = calculateNormal();
-		
+
 		if(normal.dotProduct(ray.getDirection()) > 0)
 		{
 			normal = new Vector(-1 * normal.getX1(), 
 					-1 * normal.getX2(),
 					-1 * normal.getX3());
 		}
-		
+
 		return normal;
 	}
 

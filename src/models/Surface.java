@@ -8,4 +8,5 @@ public abstract class Surface {
 	public abstract Vector calculateNormalAtIntersection(Point intersection, Ray ray);
 	
 	public abstract SurfaceProperties getSurfaceProperties();
+	
 }
