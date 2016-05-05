@@ -6,6 +6,10 @@ This project is an implementation of Ray Tracing algorithm. The idea behind this
 
 I implemented illumination with ambient light, point light and added reflected ray. This program does not support transparent object.
 
+Here's the generated image:  
+
+[](img/imageRender.jpg)  
+
 ##Contact  
 I can be contacted at [vu.nguyen@skidmore.edu](mailto:vu.nguyen@skidmore.edu) or [anhvu.nguyenlam@gmail.com](mailto:anhvu.nguyenlam@gmail.com).  
 
