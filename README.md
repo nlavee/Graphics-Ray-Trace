@@ -8,7 +8,7 @@ I implemented illumination with ambient light, point light and added reflected r
 
 Here's the generated image:  
 
-[](img/imageRender.jpg)  
+![](img/imageRender.jpg)  
 
 ##Contact  
 I can be contacted at [vu.nguyen@skidmore.edu](mailto:vu.nguyen@skidmore.edu) or [anhvu.nguyenlam@gmail.com](mailto:anhvu.nguyenlam@gmail.com).  
