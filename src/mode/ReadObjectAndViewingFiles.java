@@ -52,11 +52,6 @@ import src.models.SurfaceProperties;
 import src.models.Vector;
 import src.models.Point;
 
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.util.Animator;
-
 public class ReadObjectAndViewingFiles 
 {
 
@@ -85,15 +80,7 @@ public class ReadObjectAndViewingFiles
 		boolean io = false;
 
 		if(!io) {
-			// NOTE: this program as written expects the 2 command line arguments
-			// the first is the object file name 
-			// the second is the viewing paramater file name
-			// in Eclipse, enter these separated by a space in the 
-			// Run..., Java Application name, Arguments tab, Program arguments text area
-
-			/* this is Java code to read in an object file and
-		 a viewing parameter file */
-
+			
 			BufferedReader objFileBR;
 			String line, tempstr;
 			StringTokenizer st;
@@ -377,20 +364,6 @@ public class ReadObjectAndViewingFiles
 				System.out.println("couldn't read from file");
 			}
 
-
-			//			for(Point Point : v)
-			//			{
-			//				System.out.println(Point);
-			//			}
-			//			
-			//			for (int i = 0; i < numPolys; i++) {
-			//				System.out.println("Polygon number " + i + ":");
-			//				for (int j = 0; j < polygon[i].getNumVs(); j++)
-			//					System.out.println(" " + v[polygon[i].PointIndices[j]].toString());
-			//				System.out.println();
-			//				System.out.println(" with color: " + polygon[i].getColorInfo() + "\n");
-			//			}
-
 			// ================================================================
 			// ------READ VIEWING PARAMETER FILE  
 			// ================================================================
@@ -463,19 +436,6 @@ public class ReadObjectAndViewingFiles
 				System.out.println("couldn't read from file");
 			}
 
-			//			System.out.println("VRP = " + vrp);
-			//			System.out.println("PRP = " + prp);
-			//			System.out.println("VUP = " + vup);
-			//			System.out.println("VPN = " + vpn);
-			//			
-			//			System.out.print("WINDOW =");
-			//			System.out.println(" " + umin + " " + umax + " " + vmin + " " + vmax);
-			//
-			//			System.out.print("FRONT =");
-			//			System.out.println(" " + frontClip);
-			//
-			//			System.out.print("BACK =");
-			//			System.out.println(" " + backClip);
 			if (debug) System.out.println(ambientRed);
 			if (debug) System.out.println(ambientGreen);
 			if (debug) System.out.println(ambientBlue);
@@ -522,8 +482,7 @@ public class ReadObjectAndViewingFiles
 		double vRange = vmax - vmin;
 		int height = 1024;
 		int width = 1024;
-		//System.out.println("Height: " + (height) + " - Width: " + (width));
-
+		
 		image  = new RGBPixel[height][width];
 
 		// for each scan line
@@ -532,25 +491,12 @@ public class ReadObjectAndViewingFiles
 			// for each pixel in scan line
 			for(int j = 0; j < width; j++)
 			{
-				//				System.out.println("\t\tPixel: (" + i + ", " +j + ")");
-
 				// modified slightly to be able to handle different projection window values
 				double xValuePixel = (uRange/height) * (i + 0.5)-Math.abs(umin);
 				double yValuePixel = (vRange/width) * (j + 0.5)-Math.abs(vmin);
 				//System.out.println(xValuePixel + " - " + yValuePixel);
 				Point pixelPoint = new Point(xValuePixel, yValuePixel, -1); // plane sits on z = -1
-				//				if(i == height / 2 && j == width / 2)
-				//				{
-				//					System.out.println(uRange);
-				//					System.out.println(vRange);
-				//					System.out.println(i);
-				//					System.out.println(j);
-				//					System.out.println("Height: " + (height) + " - Width: " + (width));
-				//					System.out.println(xValuePixel + " - " + yValuePixel);
-				//				System.out.println("Starting on pixel point: " + pixelPoint);
-				//				System.exit(0);
-				//				}
-
+				
 				Vector rD = pixelPoint.subtractVertices(prp);
 				rD.normalize();
 				Ray ray = new Ray(prp, rD);
@@ -563,8 +509,6 @@ public class ReadObjectAndViewingFiles
 				image[i][j] = new RGBPixel((int) (surfaceProp.getRed() * 255), 
 						(int) (surfaceProp.getGreen() * 255), 
 						(int) (surfaceProp.getBlue() * 255));
-
-				//if (debug) 
 			}
 		}
 
@@ -587,15 +531,12 @@ public class ReadObjectAndViewingFiles
 		for(int j = 0; j < surface.length; j++)
 		{
 			Surface surf = surface[j];
-			// System.out.println(surf);
 
 			// calculate intersection point
 			Point intersectionPoint = surf.intersect(ray);
 
 			if(intersectionPoint != null)
 			{
-				//if (debug) 
-				//	System.out.println(intersectionPoint);
 				Vector fromPRP = intersectionPoint.subtractVertices(prp);
 				double distance = fromPRP.magnitude();
 
@@ -621,11 +562,7 @@ public class ReadObjectAndViewingFiles
 		// and then compute other ray from this
 		if(nearestPoint != null)
 		{
-			//if (debug) 
-			//System.out.println(nearestPoint);
-			//System.exit(0);
 			Vector normal = computerNormalAtIntersection(surface[nearestSurface], nearestPoint, ray);
-			//System.out.println(normal);
 			prop = RT_Shade(surface[nearestSurface], ray, nearestPoint, normal, i);
 		}
 		// if no point, meaning that it just shots to infinity, set that pixel to have ambient color

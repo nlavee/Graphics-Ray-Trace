@@ -144,7 +144,7 @@ public class Polygon extends Surface
 		if(planeIntersection != null)
 		{
 
-			// calculate which plane to projec to
+			// calculate which plane to project to
 			int planeToProject = calculateProjection(normal);
 			//			System.out.println(normal);
 			//			System.out.println(planeToProject);
@@ -190,7 +190,6 @@ public class Polygon extends Surface
 			}
 			
 			boolean intersect = originInsidePolygon(projectionPoint, planeToProject);
-
 			if(intersect)
 			{
 				//				System.out.println("Intersect: " + intersect);
