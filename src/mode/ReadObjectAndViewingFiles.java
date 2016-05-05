@@ -498,6 +498,7 @@ public class ReadObjectAndViewingFiles
 		} catch (IOException e) {
 			System.out.println("Cannot open image.");
 		}
+		
 	} // end of main		
 
 	private static void mainImageGenerating() {
@@ -728,9 +729,12 @@ public class ReadObjectAndViewingFiles
 				SurfaceProperties surfPropRRay = RT_trace(reflected, i+1);
 
 				// scale color by specular coefficient and add to color
-				double redSpecular = surfPropRRay.getRed() * surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
-				double greenSpecular = surfPropRRay.getGreen() * surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
-				double blueSpecular = surfPropRRay.getBlue() * surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
+				double redSpecular = surfPropRRay.getRed() * 
+						surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
+				double greenSpecular = surfPropRRay.getGreen() * 
+						surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
+				double blueSpecular = surfPropRRay.getBlue() * 
+						surface2.getSurfaceProperties().getSpecularReflectionCoefficient();
 				//				System.out.println(redSpecular + " - " + greenSpecular + " - " + blueSpecular);
 
 				//System.out.println(prop.getRed() + redSpecular);
