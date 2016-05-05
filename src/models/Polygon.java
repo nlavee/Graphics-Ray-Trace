@@ -125,9 +125,9 @@ public class Polygon extends Surface
 	public Point intersect(Ray x) {
 
 		Vector normal = calculateNormal();
-		
-		Point planeIntersection = calculatePlane(x, normal);
 
+		Point planeIntersection = calculatePlane(x, normal);
+		
 		// check conditions
 		if(normal.dotProduct(x.getDirection()) > 0)
 		{
@@ -149,7 +149,7 @@ public class Polygon extends Surface
 			//			System.out.println(normal);
 			//			System.out.println(planeToProject);
 
-			
+
 			// project to the plane it needs 
 			ArrayList<Point> projectionPoint = new ArrayList<Point>();
 			for(Point p : pointList)
@@ -172,7 +172,7 @@ public class Polygon extends Surface
 			if(planeToProject == 1) projectedIntersection.setX1(0);
 			else if(planeToProject == 2) projectedIntersection.setX2(0);
 			else projectedIntersection.setX3(0);
-			
+
 			// calculating matrix to translate to origin based on the projected intersection point
 			double[][] data = {
 					{1,0,0, -1 * projectedIntersection.getX1()},
@@ -188,7 +188,7 @@ public class Polygon extends Surface
 				// translate every p
 				projectionPoint.set(i, translateMatrix.multiply(p));
 			}
-			
+
 			boolean intersect = originInsidePolygon(projectionPoint, planeToProject);
 			if(intersect)
 			{
@@ -215,59 +215,62 @@ public class Polygon extends Surface
 		if(planeToProject == 1) v0 = projectionPoint.get(0).getX3();
 		else if(planeToProject == 2) v0 = projectionPoint.get(0).getX3();
 		else v0 = projectionPoint.get(0).getX2();
-		
+
 		if(v0 > 0) signHold1 += 1;
 		else signHold1 -= 1;
 
 		for(int i = 0 ; i < projectionPoint.size() ; i++)
 		{
-			for(int j = i+1; j < projectionPoint.size(); j++)
+			// j will be the vertex next in the line, 
+			// if we are at the last vertex, loop back so that j is the first vertex
+			int j = i == projectionPoint.size() - 1 ? 0 : i+1;
+
+//			System.out.println(pointList.get(i) + " -> " + pointList.get(j));
+			
+			Point start = projectionPoint.get(i);
+			Point end = projectionPoint.get(j);
+
+			double ub = 0;
+			double ua = 0;
+			double vb = 0;
+			double va = 0;
+
+			if(planeToProject == 1)
 			{
-				Point start = projectionPoint.get(i);
-				Point end = projectionPoint.get(j);
-
-
-				double ub = 0;
-				double ua = 0;
-				double vb = 0;
-				double va = 0;
-
-				if(planeToProject == 1)
-				{
-					ub = end.getX2();
-					ua = start.getX2();
-					vb = end.getX3();
-					va = start.getX3();
-				}
-				else if(planeToProject == 2)
-				{
-					ub = end.getX1();
-					ua = start.getX1();
-					vb = end.getX3();
-					va = start.getX3();
-				}
-				else if(planeToProject == 3)
-				{
-					ub = end.getX1();
-					ua = start.getX1();
-					vb = end.getX2();
-					va = start.getX2();
-				}
-
-
-				if(vb > 0) signHold2 = 1;
-				else signHold2 = -1;
-
-				if(signHold1 != signHold2)
-				{
-					if(ua > 0 && ub > 0) numCross++;
-					else if(ua > 0 || ub > 0)
-					{
-						if(crossPosUAxis(ua, va, ub, vb)) numCross++;
-					}
-				}
-				signHold1 = signHold2;
+				ub = end.getX2();
+				ua = start.getX2();
+				vb = end.getX3();
+				va = start.getX3();
 			}
+			else if(planeToProject == 2)
+			{
+				ub = end.getX1();
+				ua = start.getX1();
+				vb = end.getX3();
+				va = start.getX3();
+			}
+			else if(planeToProject == 3)
+			{
+				ub = end.getX1();
+				ua = start.getX1();
+				vb = end.getX2();
+				va = start.getX2();
+			}
+
+
+			if(vb > 0) signHold2 = 1;
+			else signHold2 = -1;
+
+			if(signHold1 != signHold2)
+			{
+				if(ua > 0 && ub > 0) numCross++;
+				else if(ua > 0 || ub > 0)
+				{
+					if(crossPosUAxis(ua, va, ub, vb)) numCross++;
+				}
+			}
+			signHold1 = signHold2;
+
 		}
 
 		boolean intersect = false;
@@ -298,14 +301,14 @@ public class Polygon extends Surface
 		//System.out.println(D);
 
 		x.getDirection().normalize();
-		
+
 		double s = - ( 
 				normal.getX1() * x.getStartingPoint().getX1() + 
 				normal.getX2() * x.getStartingPoint().getX2() + 
 				normal.getX3() * x.getStartingPoint().getX3() + D) / 
 				(normal.dotProduct(x.getDirection()));
 		//System.out.println(s);
-		
+
 		if(s < 0) return null;
 		else return new Point(x.getStartingPoint().getX1() + x.getDirection().getX1() * s,
 				x.getStartingPoint().getX2() + x.getDirection().getX2() * s,

@@ -80,7 +80,7 @@ public class ReadObjectAndViewingFiles
 		boolean io = false;
 
 		if(!io) {
-			
+
 			BufferedReader objFileBR;
 			String line, tempstr;
 			StringTokenizer st;
@@ -226,7 +226,7 @@ public class ReadObjectAndViewingFiles
 
 					for (int j = 1; j <=numVsForThisPoly; j++) {
 						tempstr = st.nextToken();
-						newPolygon.addPoint(v[Integer.parseInt(tempstr) - 1]);
+						newPolygon.addPoint(v[Integer.parseInt(tempstr)]);
 					}
 
 					st.nextToken(); // ignore the string COLOR
@@ -248,10 +248,17 @@ public class ReadObjectAndViewingFiles
 					double specularReflectionCoeff = Double.parseDouble(tempstr);
 					tempstr = st.nextToken();
 					double specularReflectionExp = Double.parseDouble(tempstr);
-					newPolygon.getSurfaceProperties().setAmbientReflectionCoefficient(ambientReflectionCoeff);
-					newPolygon.getSurfaceProperties().setDiffuseReflectionCoefficient(diffuseReflectionCoeff);
-					newPolygon.getSurfaceProperties().setSpecularReflectionCoefficient(specularReflectionCoeff);
-					newPolygon.getSurfaceProperties().setSpecularReflectionExponent(specularReflectionExp);
+					tempstr = st.nextToken();
+					newPolygon.getSurfaceProperties().
+					setAmbientReflectionCoefficient(ambientReflectionCoeff);
+					newPolygon.getSurfaceProperties().
+					setDiffuseReflectionCoefficient(diffuseReflectionCoeff);
+					newPolygon.getSurfaceProperties().
+					setSpecularReflectionCoefficient(specularReflectionCoeff);
+					newPolygon.getSurfaceProperties().
+					setSpecularReflectionExponent(specularReflectionExp);
+					newPolygon.getSurfaceProperties().
+					setReflective(tempstr.equalsIgnoreCase("y")? true : false);
 					if(debug) System.out.println(newPolygon);
 
 					surface[i] = newPolygon;
@@ -308,11 +315,16 @@ public class ReadObjectAndViewingFiles
 					tempstr = st.nextToken();
 					double specularReflectionExp = Double.parseDouble(tempstr);
 					tempstr = st.nextToken();
-					newSphere.getSurfaceProperties().setAmbientReflectionCoefficient(ambientReflectionCoeff);
-					newSphere.getSurfaceProperties().setDiffuseReflectionCoefficient(diffuseReflectionCoeff);
-					newSphere.getSurfaceProperties().setSpecularReflectionCoefficient(specularReflectionCoeff);
-					newSphere.getSurfaceProperties().setSpecularReflectionExponent(specularReflectionExp);
-					newSphere.getSurfaceProperties().setReflective(tempstr.equalsIgnoreCase("y")? true : false);
+					newSphere.getSurfaceProperties().
+					setAmbientReflectionCoefficient(ambientReflectionCoeff);
+					newSphere.getSurfaceProperties().
+					setDiffuseReflectionCoefficient(diffuseReflectionCoeff);
+					newSphere.getSurfaceProperties().
+					setSpecularReflectionCoefficient(specularReflectionCoeff);
+					newSphere.getSurfaceProperties().
+					setSpecularReflectionExponent(specularReflectionExp);
+					newSphere.getSurfaceProperties().
+					setReflective(tempstr.equalsIgnoreCase("y")? true : false);
 					surface[numPolys + i] = newSphere;
 				}
 
@@ -450,18 +462,22 @@ public class ReadObjectAndViewingFiles
 		 * Done with IO, move on to drawing.
 		 */
 		Long start = System.nanoTime();
-		mainImageGenerating();
+		image = mainImageGenerating();
 		Long end = System.nanoTime();
 		System.out.println("Rendering Time: " + ((end - start) / 1000000000.0) + "s");
+
+		// export image
 		try {
+			ReadWritePPM.writeImage(image, "../../img/imageRender.ppm");
+			JPGAndRGBPixelArray.writeImage(image, "../../img/imageRender.jpg");
 			Desktop.getDesktop().open(new File("../../img/imageRender.ppm"));
 		} catch (IOException e) {
-			System.out.println("Cannot open image.");
+			System.out.println("Cannot either write or show rendered image");
 		}
-		
+
 	} // end of main		
 
-	private static void mainImageGenerating() {
+	private static RGBPixel[][] mainImageGenerating() {
 		if (debug) {
 			for(Point point : v)
 			{
@@ -482,7 +498,7 @@ public class ReadObjectAndViewingFiles
 		double vRange = vmax - vmin;
 		int height = 1024;
 		int width = 1024;
-		
+
 		image  = new RGBPixel[height][width];
 
 		// for each scan line
@@ -496,7 +512,7 @@ public class ReadObjectAndViewingFiles
 				double yValuePixel = (vRange/width) * (j + 0.5)-Math.abs(vmin);
 				//System.out.println(xValuePixel + " - " + yValuePixel);
 				Point pixelPoint = new Point(xValuePixel, yValuePixel, -1); // plane sits on z = -1
-				
+
 				Vector rD = pixelPoint.subtractVertices(prp);
 				rD.normalize();
 				Ray ray = new Ray(prp, rD);
@@ -512,12 +528,7 @@ public class ReadObjectAndViewingFiles
 			}
 		}
 
-		// export image
-		try {
-			ReadWritePPM.writeImage(image, "../../img/imageRender.ppm");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		return image;
 	}
 
 	private static SurfaceProperties RT_trace(Ray ray, int i) {
@@ -584,9 +595,12 @@ public class ReadObjectAndViewingFiles
 		Ray shadow = new Ray();
 
 		setColor(prop, 
-				ambientRed * surface2.getSurfaceProperties().getAmbientReflectionCoefficient() * surface2.getSurfaceProperties().getRed(), 
-				ambientGreen * surface2.getSurfaceProperties().getAmbientReflectionCoefficient() * surface2.getSurfaceProperties().getGreen(), 
-				ambientBlue * surface2.getSurfaceProperties().getAmbientReflectionCoefficient() * surface2.getSurfaceProperties().getBlue());
+				ambientRed * surface2.getSurfaceProperties().getAmbientReflectionCoefficient() 
+				* surface2.getSurfaceProperties().getRed(), 
+				ambientGreen * surface2.getSurfaceProperties().getAmbientReflectionCoefficient() 
+				* surface2.getSurfaceProperties().getGreen(), 
+				ambientBlue * surface2.getSurfaceProperties().getAmbientReflectionCoefficient() 
+				* surface2.getSurfaceProperties().getBlue());
 
 		double objectRed = 0;
 		double objectBlue = 0;
@@ -599,9 +613,7 @@ public class ReadObjectAndViewingFiles
 			shadow = new Ray(nearestPoint, pointToLight);
 
 			double dL = pointToLight.magnitude();
-
 			double functionDL = calculateAttenuationFunction(dL);
-
 			double phi = calculatePhi(shadow, surface2);
 
 			// normalize L
@@ -609,51 +621,24 @@ public class ReadObjectAndViewingFiles
 
 			if( normal.dotProduct(pointToLight) > 0)
 			{
-//				System.out.println("function DL : " + functionDL);
-//				System.out.println(l.getRed());
-//							System.out.println("kD: " + surfaceProps.getDiffuseReflectionCoefficient());
-				//			System.out.println(phi);
-//				System.out.println(normal.dotProduct(pointToLight));
-//				System.out.println(surfaceProps.getRed());
-//				System.out.println(surfaceProps.getDiffuseReflectionCoefficient() * surfaceProps.getRed() * (normal.dotProduct(pointToLight)));
-//				System.out.println(surfaceProps.getSpecularReflectionCoefficient() * Math.pow(Math.cos(phi), surfaceProps.getSpecularReflectionExponent()));
-//				System.out.println((surfaceProps.getDiffuseReflectionCoefficient() * surfaceProps.getRed() * (normal.dotProduct(pointToLight))) + 
-//						(surfaceProps.getSpecularReflectionCoefficient() * Math.pow(Math.cos(phi), surfaceProps.getSpecularReflectionExponent())));
-				//			System.out.println(( surfaceProps.getDiffuseReflectionCoefficient() * surfaceProps.getRed() * (normal.dotProduct(pointToLight)) + 
-				//						surfaceProps.getSpecularReflectionCoefficient() * Math.pow(Math.cos(phi), surfaceProps.getSpecularReflectionExponent())));
-				//////			
-				//				System.out.println("Adding light.");
-//				System.out.println(surface2.getSurfaceProperties().getRed());
-//				System.out.println(surface2.getSurfaceProperties().getGreen());
-//				System.out.println(surface2.getSurfaceProperties().getBlue());
 				objectRed += 10*(functionDL * l.getRed() * 
 						( surfaceProps.getDiffuseReflectionCoefficient() * surfaceProps.getRed() * (normal.dotProduct(pointToLight)) + 
-								surfaceProps.getSpecularReflectionCoefficient() * Math.pow(Math.cos(phi), surfaceProps.getSpecularReflectionExponent())));
+								surfaceProps.getSpecularReflectionCoefficient() * Math.pow(phi, surfaceProps.getSpecularReflectionExponent())));
 				objectGreen += 10*(functionDL * l.getGreen() * 
 						( surfaceProps.getDiffuseReflectionCoefficient() * surfaceProps.getGreen() * (normal.dotProduct(pointToLight)) + 
-								surfaceProps.getSpecularReflectionCoefficient() * Math.pow(Math.cos(phi), surfaceProps.getSpecularReflectionExponent())));
+								surfaceProps.getSpecularReflectionCoefficient() * Math.pow(phi, surfaceProps.getSpecularReflectionExponent())));
 				objectBlue += 10*(functionDL * l.getBlue() * 
 						( surfaceProps.getDiffuseReflectionCoefficient() * surfaceProps.getBlue() * (normal.dotProduct(pointToLight)) + 
-								surfaceProps.getSpecularReflectionCoefficient() * Math.pow(Math.cos(phi), surfaceProps.getSpecularReflectionExponent())));
+								surfaceProps.getSpecularReflectionCoefficient() * Math.pow(phi, surfaceProps.getSpecularReflectionExponent())));
 			}
 		}
-
-		//		if(objectRed == 0.0) System.out.println(surface2);
-		//		if(objectGreen == 0.0); System.out.println(surface2);
-		//		if(objectBlue == 0.0); System.out.println(surface2);
-//				System.out.println(objectRed + ", " + objectGreen + ", " + objectBlue);
-
+		
 		// setting the color, clipping at 1
-//		System.out.println(prop.getRed());
 		setColor(prop, 
 				(prop.getRed() + objectRed) > 1 ? 1 : (prop.getRed() + objectRed), 
 						(prop.getGreen() + objectGreen) > 1 ? 1 : (prop.getGreen() + objectGreen), 
 								(prop.getBlue() + objectBlue) > 1 ? 1 : (prop.getBlue() + objectBlue));
-		//
-//				System.out.println(prop.getRed());
-		//		System.out.println(prop.getGreen());
-		//		System.out.println(prop.getBlue());
-		//		
+
 		if( i < maxDepth )
 		{
 			//System.out.println(surface2.getSurfaceProperties().isReflective());
@@ -698,10 +683,10 @@ public class ReadObjectAndViewingFiles
 			//			}
 		}
 		//
-		//		System.out.println(prop.getRed());
-		//		System.out.println(prop.getGreen());
-		//		System.out.println(prop.getBlue());
-		//		
+//				System.out.println(prop.getRed());
+//				System.out.println(prop.getGreen());
+//				System.out.println(prop.getBlue());
+				
 		return prop;
 	}
 
@@ -713,10 +698,7 @@ public class ReadObjectAndViewingFiles
 		shadowUnit.normalize();
 		// calculate dot product
 		double dotProd = eyeToNearestPoint.dotProduct(shadowUnit);
-		//System.out.println(dotProd);
-		double angle = (Math.acos(dotProd));
-		//System.out.println(angle);
-		return angle;
+		return dotProd;
 	}
 
 	private static double calculateAttenuationFunction(double dL) {
